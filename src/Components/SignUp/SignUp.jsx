@@ -1,39 +1,42 @@
 import React, { useContext, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import logo from "/google.png";
 import { AuthContext } from "../../providers/AuthProviders";
 
-const Login = () => {
+const SignUp = () => {
   const [error, setError] = useState("");
-  const { loginUser, signUpUsingGmail } = useContext(AuthContext);
-  const navigate = useNavigate();
-  const location = useLocation();
-  const from = location?.state?.from?.pathname || "/";
-  console.log(location);
-  console.log(from);
+  const { user, createUser, signUpUsingGmail } = useContext(AuthContext);
 
-  const handleLogin = (event) => {
+  const handleSignUp = (event) => {
     event.preventDefault();
-    setError("");
+    setError('');
     const form = event.target;
     const email = form.email.value;
     const password = form.password.value;
-    loginUser(email, password)
+    const confirm = form.confirm.value;
+    console.log(email, password, confirm);
+    if (password !== confirm) {
+      setError("Password did not match");
+      return;
+    } else if (password.length < 6) {
+      setError("Password must be 6 characters or longer");
+      return;
+    }
+    createUser(email, password)
       .then((result) => {
         const loggedUser = result.user;
         console.log(loggedUser);
         form.reset();
-        navigate(from,{replace:true});
       })
       .catch((err) => {
         setError(err.message);
       });
   };
-
   const googleSignUp = () => {
     signUpUsingGmail()
       .then((result) => {
-        navigate(from, { replace: true });
+        const loggedUser = result.user;
+        console.log(loggedUser);
       })
       .catch((err) => {
         setError(err.message);
@@ -41,10 +44,12 @@ const Login = () => {
   };
 
   return (
-    <div className="flex justify-center my-10">
+    <div className="flex justify-center my-6">
       <div className="w-1/3 border border-solid border-slate-400 rounded-lg py-5 px-12">
-        <h1 className="text-3xl font-bold text-slate-700 text-center">Login</h1>
-        <form className="mt-4" onSubmit={handleLogin}>
+        <h1 className="text-3xl font-bold text-slate-700 text-center">
+          Sign Up
+        </h1>
+        <form className="mt-4" onSubmit={handleSignUp}>
           <div className="form-control">
             <label htmlFor="email" className="form-label">
               Email
@@ -67,15 +72,26 @@ const Login = () => {
               className="form-input"
             />
           </div>
+          <div className="form-control">
+            <label htmlFor="confirm" className="form-label">
+              Confirm Password
+            </label>
+            <input
+              type="password"
+              name="confirm"
+              id="confirm"
+              className="form-input"
+            />
+          </div>
           <div className="form-control my-2">
-            <input type="submit" value="Login" className="form-submit-btn" />
+            <input type="submit" value="Sign Up" className="form-submit-btn" />
           </div>
           <p className="my-3 text-red-700 text-center font-semibold">{error}</p>
         </form>
         <p className="ml-1 text-slate-600 font-semibold">
-          New to Ema-john?
-          <Link to="/sign-up" className="text-orange-400 ml-1 hover:underline">
-            Create New Account
+          Already have an account?
+          <Link to="/login" className="text-orange-400 ml-1 hover:underline">
+            Login
           </Link>
         </p>
 
@@ -100,4 +116,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default SignUp;
